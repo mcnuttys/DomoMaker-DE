@@ -14,13 +14,14 @@ const makerPage = (req, res) => {
 };
 
 const makeDomo = (req, res) => {
-  if (!req.body.name || !req.body.age) {
-    return res.status(400).json({ error: 'RAWR! Both name and age are required!' });
+  if (!req.body.name || !req.body.age || !req.body.score) {
+    return res.status(400).json({ error: 'RAWR! Name, age, and score are required!' });
   }
 
   const domoData = {
     name: req.body.name,
     age: req.body.age,
+    score: req.body.score,
     owner: req.session.account._id,
   };
 
@@ -57,6 +58,19 @@ const getDomos = (request, response) => {
   });
 };
 
+const bestDomos = (request, response) => {
+  const res = response;
+
+  return Domo.DomoModel.find().select('name age score').then((docs) => {
+    const domoArray = docs.map((domo) => ({
+      id: domo.id, name: domo.name, age: domo.age, score: domo.score,
+    })).sort((a, b) => b.score - a.score).slice(0, 5);
+
+    return res.json({ domos: domoArray });
+  });
+};
+
 module.exports.makerPage = makerPage;
 module.exports.getDomos = getDomos;
+module.exports.bestDomos = bestDomos;
 module.exports.make = makeDomo;
